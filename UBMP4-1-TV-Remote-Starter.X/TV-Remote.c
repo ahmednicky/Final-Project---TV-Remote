@@ -1,6 +1,6 @@
 /*==============================================================================
  Project: TV-Remote control transmitter - Project starter code
- Date:    April 4, 2022
+ Date:    June 8, 2022
  
  This program provides basic functions and a program outline to start a TV
  remote control transmitter programming project. 
@@ -48,13 +48,7 @@ void pulse_40kHz(unsigned int pulses)
 
 void pulse_38kHz(unsigned int pulses)
 {
-    for(pulses; pulses != 0; pulses --)
-    {
-        IRLED = 1;
-        __delay_us(13);
-        IRLED = 0;
-        __delay_us(12);
-    }
+
 }
 
 void transmit_NEC(unsigned char address, unsigned char command)
@@ -62,26 +56,11 @@ void transmit_NEC(unsigned char address, unsigned char command)
     // Save !(address), !(command)
     
     // Send start pulse
-    pulse_38kHz(342);
     
     // Start pulse delay
-    __delay_us(4500);
     
     // Transmit address
-    for(bits = 8; bits != 0; bits --)
-    {
-        pulse_38kHz(21);
-        if(address & 0b00000001 == 0)
-        {
-            __delay_us(560);
-        }
-        else
-        {
-            __delay_us(1690);
-        }
-        address = address >> 1;
-    }
-    
+   
     // Transmit !(address)
     
     // Transmit command
@@ -129,6 +108,22 @@ int main(void)
         
         // Read pushbuttons
         
+        // Power on & off
+        if(SW2 == 0)
+        {
+            NEC(TV, Power);
+        }
+        // Volume up
+        if(SW4 == 0)
+        {
+            NEC(TV, VOLUP);
+        }
+        // Volume down
+        if(SW5 == 0)
+        {
+            NEC(TV, VOLDN);
+        }
+
         // Is it a new button press? Transmit address and command for button.
         
         // Is button a repeat press? Transmit repeat code - protocol dependent.
@@ -146,18 +141,24 @@ int main(void)
 
 /* Learn More - Program Analysis Activities
  * 
- * 1. Use an oscilloscope to measure the width of the high and low pulses.
+ * 1. Modify the UBMP4_config() function to allow output on the IR led pin. Use
+*     the test code and an oscilloscope to measure the width of the high and
+ *    low pulses.
  * 
- * 2. Adjust the delays in the pulse_40kHz() function to make the high and low
- *    pulses as close to 25us as possible. Add NOP(); single cycle delays, or
- *    replace __delay_us() functions with _delay() clock cycle functions.
- * 
- * 3. Why are the delays in the pulse_40kHz function different by 1us, yet the
+ * 2. Why are the delays in the pulse_40kHz function different by 1us, yet the
  *    pulses are similar in length?
  * 
+ * 3. Adjust the delays in the pulse_40kHz() function to make the high and low
+ *    pulses as close to 25us as possible. Add NOP(); single cycle delays, or
+ *    replace __delay_us() functions with _delay() clock cycle functions to
+ *    modify the pulse high and low period delays.
+ * 
  * 4. Determine the number of pulses required to create a start bit, a zero bit,
- *    and a one bit.
+ *    and a one bit for the protocol that your remote control uses.
  * 
  * 5. Complete the transmit_Sony() function by adding the code to transmit the
  *    5-bit device address code after the command code.
+ *
+ * 6. Create the definitions and the functions required to transmit the protocol
+ *    used by your IR device.
  */
