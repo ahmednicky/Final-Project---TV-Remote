@@ -48,25 +48,76 @@ void pulse_40kHz(unsigned int pulses)
 
 void pulse_38kHz(unsigned int pulses)
 {
-
+    for(pulses; pulses != 0; pulses --)
+    {
+        IRLED = 1;
+        __delay_us(13);
+        IRLED = 0;
+        __delay_us(12);
+    }
 }
 
 void transmit_NEC(unsigned char address, unsigned char command)
 {
     // Save !(address), !(command)
-    
+    unsigned char addressCopy = !address;
+    unsigned char commandCopy = !command;
     // Send start pulse
-    
+    pulse_38khz(341);
     // Start pulse delay
-    
+    __delay_us(4500);
     // Transmit address
-   
+    for(bits = 0; bits != 0; bits --)
+    {
+        pulses_38kHz(21);
+        if((address & 0b1101010) == 0)
+        {
+            __delay_us(560);
+        }
+        else
+        {
+            address = address >> 1;
+        }
+    }
     // Transmit !(address)
-    
+    for(bits = 0; bits != 0; bits --)
+    {
+        pulses_38kHz(21);
+        if((addressCopy & 0b11000111) == 1)
+        {
+            __delay_us(1690);
+        }
+        else
+        {
+            address = address >> 1;
+        }
+    }
     // Transmit command
-    
+    for(bits = 0; bits != 0; bits --)
+    {
+        pulses_38kHz(21);
+        if((command & 0b11010000) == 0)
+        {
+            __delay_us(560);
+        }
+        else
+        {
+            command = command >> 1;
+        }
+    }
     // Transmit !(command)
-    
+    for(bits = 0; bits != 0; bits --)
+    {
+        pulses_38kHz(21);
+        if((commandCopy & 0b11010000) == 1)
+        {
+            __delay_us(1690);
+        }
+        else
+        {
+            command = command >> 1;
+        }
+    }
 }
 
 void transmit_Sony(unsigned char address, unsigned char command)
@@ -78,7 +129,7 @@ void transmit_Sony(unsigned char address, unsigned char command)
     __delay_us(SONY_BIT_DELAY);
     
     // Transmit 7 command bits LSB-first
-    for(bits = SONY_DATABITS; bits != 0; bits --)
+    for(bits = 8; bits != 0; bits --)
     {
         if((command & 0b00000001) == 0)
         {
@@ -104,25 +155,15 @@ int main(void)
     while(1)
 	{
         // Pulse timing test code
-        pulse_40kHz(100);
+        pulse_38kHz(100);
         
         // Read pushbuttons
         
         // Power on & off
-        if(SW2 == 0)
-        {
-            NEC(TV, Power);
-        }
+
         // Volume up
-        if(SW4 == 0)
-        {
-            NEC(TV, VOLUP);
-        }
+
         // Volume down
-        if(SW5 == 0)
-        {
-            NEC(TV, VOLDN);
-        }
 
         // Is it a new button press? Transmit address and command for button.
         
